@@ -154,9 +154,9 @@ class DroneEnv(gym.Env):
             reward = -1000
             done = True
             self.stop()
-        vrep.simxPauseSimulation(self.clientID, vrep.simx_opmode_blocking)    
-        time.sleep(self.stepTime)
         vrep.simxStartSimulation(self.clientID, vrep.simx_opmode_blocking)
+        time.sleep(self.stepTime)
+        vrep.simxPauseSimulation(self.clientID, vrep.simx_opmode_blocking)    
         return np.array(self.getStatus()), reward, done, {}
 
     def stop(self):
