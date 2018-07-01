@@ -21,6 +21,9 @@ class DroneEnv(gym.Env):
             np.finfo(np.float32).max,
             np.finfo(np.float32).max,
             np.finfo(np.float32).max,
+            np.finfo(np.float32).max,
+            np.finfo(np.float32).max,
+            np.finfo(np.float32).max,
             np.finfo(np.float32).max])
 
         self.action_space = spaces.Discrete(9) #0 do nothing, 1 acelerate rotor 1, 2 acelerate rotor 2... 5 decelerate rotor 1, 6 decelerate rotor 2...
@@ -45,11 +48,11 @@ class DroneEnv(gym.Env):
         return distance(self.getQuadricopterPosition(),self.getQuadricopterTargetPosition())
 
     def getQuadricopterPosition(self):
-#        status,quadPosition = vrep.simxGetObjectPosition(self.clientID,self.quadricopter,-1,vrep.simx_opmode_blocking)
+        status,self.quadPosition = vrep.simxGetObjectPosition(self.clientID,self.quadricopter,-1,vrep.simx_opmode_blocking)
         return self.quadPosition
 
     def getQuadricopterTargetPosition(self):
-#        status,quadPosition = vrep.simxGetObjectPosition(self.clientID,self.quadricopterTarget,-1,vrep.simx_opmode_blocking)
+        status,self.quadPosition = vrep.simxGetObjectPosition(self.clientID,self.quadricopterTarget,-1,vrep.simx_opmode_blocking)
         return self.quadricopterTargetPosition
 
     def getQuadricopterOrientation(self):
@@ -59,7 +62,7 @@ class DroneEnv(gym.Env):
 
     def getStatus(self):
 #        return self.orientation + [self.throttle, self.yaw, self.pitch, self.roll] + [0,0,0] + [0,0,0] + [0,0,0]
-        return self.quadPosition + self.quadricopterTargetPosition
+        return self.quadOrientation + self.quadPosition + self.quadricopterTargetPosition
 
     def getParticleVelocity(self, propeler):
         #print ("Getting velocity for propeler ", propeler)
@@ -118,25 +121,25 @@ class DroneEnv(gym.Env):
     def step(self, action):
         reward = 0
         done = False
-        print ("Action: ", action)
+        #print ("Action: ", action)
         #print time.time()
         if action == 0:
             None
         elif (action <= 4):
             v = self.getParticleVelocity(action)
             #print("V->", v)
-            self.setParticleVelocity(action, float(v) + 1)
+            self.setParticleVelocity(action, float(v) + self.incr)
         else:
             v = self.getParticleVelocity(action - 4)
             #print("V->", v)
-            self.setParticleVelocity(action - 4, float(v) - 1)
+            self.setParticleVelocity(action - 4, float(v) - self.incr)
 
         newDistance = self.getDistance();
         #print("Distance->", newDistance)
         if newDistance > self.distance:
             reward = -1
         elif newDistance < self.distance:
-            reward = 5
+            reward = 1
         if newDistance > 50:
             reward = -10000
             done = True
