@@ -96,6 +96,48 @@ class DroneEnv(gym.Env):
             return 1
         else:
             return None
+    def setVelocities(self):
+        #Throttle
+        velocities = np.array([self.throttle] * 4)
+        #roll
+        velocities[0] += self.roll
+        velocities[1] += self.roll
+        velocities[2] -= self.roll
+        velocities[3] -= self.roll
+        #pitch
+        velocities[0] += self.pitch
+        velocities[3] += self.pitch
+        velocities[1] -= self.pitch
+        velocities[2] -= self.pitch
+        #yaw
+        velocities[0] -= self.yaw
+        velocities[2] -= self.yaw
+        velocities[1] += self.yaw
+        velocities[3] += self.yaw
+        #set velocities
+        emptyBuff = bytearray()
+        #print(velocities)
+        res,retInts,retFloats,retStrings,retBuffer = vrep.simxCallScriptFunction(self.clientID,
+                                                                               'Quadricopter',
+                                                                               vrep.sim_scripttype_childscript,
+                                                                               'setVelocities',
+                                                                               [], velocities, [], emptyBuff,
+                                                                               vrep.simx_opmode_blocking)
+        #print("res", res)
+        #print("retInts", retInts)
+        #print("retFloats", retFloats)
+        #print("retStrings", retStrings)                                                                               
+        #print("valores devueltos", retFloats)
+        try:
+            self.quadPosition = [retFloats[0],retFloats[1],retFloats[2]]
+            self.quadOrientation = [retFloats[3],retFloats[4],retFloats[5]]
+        
+        except:
+            print "Chungui"
+
+        
+        return None
+
 
     def reset(self):
         #print("Reset")
@@ -104,10 +146,11 @@ class DroneEnv(gym.Env):
         vrep.simxStartSimulation(self.clientID,vrep.simx_opmode_blocking)
         vrep.simxPauseSimulation(self.clientID, vrep.simx_opmode_blocking)
         self.vIni = 5.33
-        self.setParticleVelocity(1, self.vIni)
-        self.setParticleVelocity(2, self.vIni)
-        self.setParticleVelocity(3, self.vIni)
-        self.setParticleVelocity(4, self.vIni)
+        self.throttle = self.vIni
+        self.yaw = 0
+        self.pitch = 0
+        self.roll = 0
+        self.setVelocities()
         #print self.quadPosition
         self.distance = self.getDistance()
 
@@ -125,14 +168,46 @@ class DroneEnv(gym.Env):
         #print time.time()
         if action == 0:
             None
-        elif (action <= 4):
-            v = self.getParticleVelocity(action)
-            #print("V->", v)
-            self.setParticleVelocity(action, float(v) + self.incr)
-        else:
-            v = self.getParticleVelocity(action - 4)
-            #print("V->", v)
-            self.setParticleVelocity(action - 4, float(v) - self.incr)
+            #self.stabilize()
+            #time.sleep(0.05)
+            #self.setVelocities()
+            #return np.array(self.getStatus()), reward, done, {}
+        elif action == 1:
+            self.throttle += self.incr
+            if (self.throttle > 6):
+                self.throttle = 6
+        elif action == 2:
+            self.throttle -= self.incr
+            if self.throttle < 0:
+                self.throttle = 0
+        elif action == 3:
+            self.yaw += self.incr
+ #           if self.yaw > 1:
+ #               self.yaw = 1
+        elif action == 4:
+            self.yaw += -self.incr
+ #           if self.yaw < -1:
+ #               self.yaw = -1
+        elif action == 5:
+            self.roll += self.incr
+#            if self.roll > 1:
+#                self.roll = 1
+        elif action == 6:
+            self.roll += -self.incr
+#            if self.roll < -1:
+#                self.roll = -1
+        elif action == 7:
+            self.pitch += self.incr
+ #           if self.pitch > 1:
+ #               self.pitch = 1
+        elif action == 8:
+            self.pitch += -self.incr
+#            if self.pitch < -1:
+#                self.pitch = -1
+        self.setVelocities()
+        self.yaw = 0
+        self.pitch = 0
+        #self.roll = 0
 
         newDistance = self.getDistance();
         #print("Distance->", newDistance)
