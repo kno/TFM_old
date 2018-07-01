@@ -1,0 +1,47 @@
+/usr/local/lib/python2.7/dist-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+Using TensorFlow backend.
+2018-06-30 19:31:38.316776: I tensorflow/core/platform/cpu_feature_guard.cc:140] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+[33mWARN: gym.spaces.Box autodetected dtype as <type 'numpy.float32'>. Please provide explicit dtype.[0m
+[33mWARN: Connected to remote API server[0m
+[33mWARN: Could not seed environment <DroneEnv<DroneEnv-v0>>[0m
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+flatten_1 (Flatten)          (None, 6)                 0         
+_________________________________________________________________
+dense_1 (Dense)              (None, 9)                 63        
+_________________________________________________________________
+activation_1 (Activation)    (None, 9)                 0         
+_________________________________________________________________
+dense_2 (Dense)              (None, 9)                 90        
+_________________________________________________________________
+activation_2 (Activation)    (None, 9)                 0         
+=================================================================
+Total params: 153
+Trainable params: 153
+Non-trainable params: 0
+_________________________________________________________________
+None
+Training for 10000 steps ...
+('Action: ', 2)
+('Action: ', 2)
+('Action: ', 4)
+('Action: ', 6)
+    4/10000: episode: 1, duration: 3.846s, episode steps: 4, steps per second: 1, episode reward: -970.000, mean reward: -242.500 [-1000.000, 10.000], mean action: 3.500 [2.000, 6.000], mean observation: 0.000 [0.000, 0.000], mean_best_reward: --
+('Action: ', 7)
+('Action: ', 7)
+done, took 6.385 seconds
+Testing for 5 episodes ...
+Traceback (most recent call last):
+  File "cem_quadrotor.py", line 70, in <module>
+    cem.test(env, nb_episodes=5, visualize=True)
+  File "/usr/local/lib/python2.7/dist-packages/rl/core.py", line 274, in test
+    observation = deepcopy(env.reset())
+  File "/home/kno/Documentos/Master/TFM/TFM/droneenv/droneEnv.py", line 107, in reset
+    self.setParticleVelocity(4, self.vIni)
+  File "/home/kno/Documentos/Master/TFM/TFM/droneenv/droneEnv.py", line 91, in setParticleVelocity
+    vrep.simx_opmode_blocking)
+  File "/home/kno/Documentos/Master/TFM/TFM/vrep.py", line 1386, in simxCallScriptFunction
+    ret = c_CallScriptFunction(clientID,scriptDescription,options,functionName,len(inputInts),c_inInts,len(inputFloats),c_inFloats,len(inputStrings),c_inStrings,len(inputBuffer),inputBufferV,ct.byref(intDataC),ct.byref(intDataP),ct.byref(floatDataC),ct.byref(floatDataP),ct.byref(stringDataC),ct.byref(stringDataP),ct.byref(bufferS),ct.byref(bufferP),operationMode)
+KeyboardInterrupt
