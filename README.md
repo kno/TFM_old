@@ -13,3 +13,6 @@ Se modifican los parámetros parametrizando el tiempo que se ejecuta la simulaci
 
 ### 2.0 Control "realista"
 Se modifica el control para que cada acción modifique los valores de pitch, yaw, roll y throttle.
+
+### 2.1 Agente DQN
+Se cambia el agente de CEM a DQN
