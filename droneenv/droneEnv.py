@@ -16,15 +16,15 @@ class DroneEnv(gym.Env):
     stepTime = 0.5
     def __init__(self):
         high = np.array([
-            np.finfo(np.float32).max,
-            np.finfo(np.float32).max,
-            np.finfo(np.float32).max,
-            np.finfo(np.float32).max,
-            np.finfo(np.float32).max,
-            np.finfo(np.float32).max,
-            np.finfo(np.float32).max,
-            np.finfo(np.float32).max,
-            np.finfo(np.float32).max])
+            10,
+            10,
+            10,
+            51,
+            51,
+            51,
+            51,
+            51,
+            51])
 
         self.action_space = spaces.Discrete(9) #0 do nothing, 1 acelerate rotor 1, 2 acelerate rotor 2... 5 decelerate rotor 1, 6 decelerate rotor 2...
         self.observation_space = spaces.Box(-1 * high, high) # Position and speed of drone & objetive position
@@ -225,7 +225,7 @@ class DroneEnv(gym.Env):
         self.pitch = 0
         #self.roll = 0
 
-        newDistance = self.getDistance();
+        newDistance = self.getDistance()
         #print("Distance->", newDistance)
         if newDistance > self.distance:
             reward = -1
