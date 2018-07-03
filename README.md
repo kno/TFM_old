@@ -17,4 +17,8 @@ Se modifica el control para que cada acción modifique los valores de pitch, yaw
 ### 2.1 Agente DQN
 Se cambia el agente de CEM a DQN
 
-### 3.0 Stabilization
+### 3.0 Estabilización
+Se añade la estabilización mediante un nuevo objeto y el control PID original del quadrotor
+
+### 3.1 Espacio de observación 
+Se modifica el espacio de observación para limitarlo al espacio real posible
