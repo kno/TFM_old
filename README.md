@@ -16,3 +16,5 @@ Se modifica el control para que cada acción modifique los valores de pitch, yaw
 
 ### 2.1 Agente DQN
 Se cambia el agente de CEM a DQN
+
+### 3.0 Stabilization

@@ -96,6 +96,17 @@ class DroneEnv(gym.Env):
             return 1
         else:
             return None
+
+    def stabilize(self):
+        emptyBuff = bytearray()
+        res,retInts,retFloats,retStrings,retBuffer = vrep.simxCallScriptFunction(self.clientID,
+                                                                               'Quadricopter',
+                                                                               vrep.sim_scripttype_childscript,
+                                                                               'initStabilize',
+                                                                               [], [], [], emptyBuff,
+                                                                               vrep.simx_opmode_oneshot)
+        return None
+
     def setVelocities(self):
         #Throttle
         velocities = np.array([self.throttle] * 4)
@@ -151,6 +162,7 @@ class DroneEnv(gym.Env):
         self.pitch = 0
         self.roll = 0
         self.setVelocities()
+        self.stabilize()
         #print self.quadPosition
         self.distance = self.getDistance()
 
@@ -167,8 +179,12 @@ class DroneEnv(gym.Env):
         #print ("Action: ", action)
         #print time.time()
         if action == 0:
-            None
-            #self.stabilize()
+            self.stabilize()
+            vrep.simxStartSimulation(self.clientID, vrep.simx_opmode_blocking)
+            vrep.simxStartSimulation(self.clientID, vrep.simx_opmode_blocking)
+            time.sleep(self.stepTime * 2)
+            vrep.simxPauseSimulation(self.clientID, vrep.simx_opmode_blocking)    
+
             #time.sleep(0.05)
             #self.setVelocities()
             #return np.array(self.getStatus()), reward, done, {}
