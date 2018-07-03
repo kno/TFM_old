@@ -16,6 +16,7 @@ class DroneEnv(gym.Env):
     stepTime = 0.5
     def __init__(self):
         high = np.array([
+            51,
             10,
             10,
             10,
@@ -62,7 +63,7 @@ class DroneEnv(gym.Env):
 
     def getStatus(self):
 #        return self.orientation + [self.throttle, self.yaw, self.pitch, self.roll] + [0,0,0] + [0,0,0] + [0,0,0]
-        return self.quadOrientation + self.quadPosition + self.quadricopterTargetPosition
+        return [self.getDistance()] + self.quadOrientation + self.quadPosition + self.quadricopterTargetPosition
 
     def getParticleVelocity(self, propeler):
         #print ("Getting velocity for propeler ", propeler)
@@ -227,12 +228,12 @@ class DroneEnv(gym.Env):
 
         newDistance = self.getDistance()
         #print("Distance->", newDistance)
-        if newDistance > self.distance:
+        if newDistance >= self.distance:
             reward = -1
         elif newDistance < self.distance:
             reward = 1
         if newDistance > 50:
-            reward = -10000
+            reward = -1000
             done = True
             self.stop()
         elif newDistance < 1:
