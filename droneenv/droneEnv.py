@@ -16,7 +16,7 @@ class DroneEnv(gym.Env):
     stepTime = 0.5
     def __init__(self):
         high = np.array([
-            51,
+            51,51,51,
             10,
             10,
             10,
@@ -48,12 +48,17 @@ class DroneEnv(gym.Env):
     def getDistance(self):
         return distance(self.getQuadricopterPosition(),self.getQuadricopterTargetPosition())
 
+    def getDistanceXYZ(self):
+        q = self.getQuadricopterPosition()
+        t = self.getQuadricopterTargetPosition()
+        return [q[0] - t[0], q[1] - t[1], q[2] - t[2]]
+
     def getQuadricopterPosition(self):
         status,self.quadPosition = vrep.simxGetObjectPosition(self.clientID,self.quadricopter,-1,vrep.simx_opmode_blocking)
         return self.quadPosition
 
     def getQuadricopterTargetPosition(self):
-        status,self.quadPosition = vrep.simxGetObjectPosition(self.clientID,self.quadricopterTarget,-1,vrep.simx_opmode_blocking)
+        status,self.quadricopterTargetPosition = vrep.simxGetObjectPosition(self.clientID,self.quadricopterTarget,-1,vrep.simx_opmode_blocking)
         return self.quadricopterTargetPosition
 
     def getQuadricopterOrientation(self):
@@ -63,7 +68,7 @@ class DroneEnv(gym.Env):
 
     def getStatus(self):
 #        return self.orientation + [self.throttle, self.yaw, self.pitch, self.roll] + [0,0,0] + [0,0,0] + [0,0,0]
-        return [self.getDistance()] + self.quadOrientation + self.quadPosition + self.quadricopterTargetPosition
+        return self.getDistanceXYZ() + self.quadOrientation + self.quadPosition + self.quadricopterTargetPosition
 
     def getParticleVelocity(self, propeler):
         #print ("Getting velocity for propeler ", propeler)
