@@ -1,0 +1,8 @@
+prefix=/root/catkin_ws/install
+
+Name: ardrone_joystick
+Description: Description of ardrone_joystick
+Version: 1.0.0
+Cflags: 
+Libs: -L/root/catkin_ws/install/lib 
+Requires: 

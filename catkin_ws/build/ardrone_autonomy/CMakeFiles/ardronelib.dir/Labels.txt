@@ -1,0 +1,13 @@
+# Target labels
+ ardronelib
+# Source files and their labels
+/root/catkin_ws/build/ardrone_autonomy/CMakeFiles/ardronelib
+/root/catkin_ws/build/ardrone_autonomy/CMakeFiles/ardronelib.rule
+/root/catkin_ws/build/ardrone_autonomy/CMakeFiles/ardronelib-complete.rule
+/root/catkin_ws/devel/src/ardronelib-stamp/ardronelib-install.rule
+/root/catkin_ws/devel/src/ardronelib-stamp/ardronelib-mkdir.rule
+/root/catkin_ws/devel/src/ardronelib-stamp/ardronelib-download.rule
+/root/catkin_ws/devel/src/ardronelib-stamp/ardronelib-update.rule
+/root/catkin_ws/devel/src/ardronelib-stamp/ardronelib-patch.rule
+/root/catkin_ws/devel/src/ardronelib-stamp/ardronelib-configure.rule
+/root/catkin_ws/devel/src/ardronelib-stamp/ardronelib-build.rule
