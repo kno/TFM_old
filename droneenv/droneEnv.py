@@ -14,6 +14,7 @@ class DroneEnv(gym.Env):
     quadricopterTargetPosition  = [0,0,0]
     quadOrientation = [0.0,0,0]
     stepTime = 0.5
+    display = False
     def __init__(self):
         high = np.array([
             51,51,51,
@@ -177,12 +178,14 @@ class DroneEnv(gym.Env):
         return np.array(self.getStatus())
 
     def render(self, mode):
+        self.display = True
         return None
 
     def step(self, action):
         reward = 0
         done = False
-        #print ("Action: ", action)
+        if (self.display):
+            print ("Action: ", action)
         #print time.time()
         if action == 0:
             self.stabilize()
