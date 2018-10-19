@@ -1,1 +1,3 @@
 myenv
+catkin_ws/src/model
+catkin_ws/src/drone_training/tensorforce
