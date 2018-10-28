@@ -18,7 +18,6 @@ from tensorforce.agents import Agent
 from gym import wrappers
 from tensorforce.contrib.openai_gym import OpenAIGym
 from tensorforce.execution import Runner
-
 # ROS packages required
 import rospy
 import rospkg
@@ -52,26 +51,26 @@ if __name__ == '__main__':
         monitor_video=False,
         visualize=True
     )
-    print os.getcwd()
-    with open('/root/catkin_ws/src/drone_training/drone_training/configs/dqn.json', 'r') as fp:
+
+    with open('/root/catkin_ws/src/drone_training/drone_training/configs/ddpg.json', 'r') as fp:
         agent = json.load(fp=fp)
 
-    with open('/root/catkin_ws/src/drone_training/drone_training/configs/mynet.json', 'r') as fp:
+    with open('/root/catkin_ws/src/drone_training/drone_training/configs/mlp2_network.json', 'r') as fp:
         network = json.load(fp=fp)
 
     agent = Agent.from_spec(
-        spec=agent,
+        spec=agent, 
         kwargs=dict(
             states=environment.states,
             actions=environment.actions,
             network=network,
         )
     )
-#    if rospy.get_param("/load"):
-#        load_dir = os.path.dirname(rospy.get_param("/load"))
-#        if not os.path.isdir(load_dir):
-#            raise OSError("Could not load agent from {}: No such directory.".format(load_dir))
-#        agent.restore_model(rospy.get_param("/load"))
+    if rospy.get_param("/load"):
+        load_dir = os.path.dirname(rospy.get_param("/load"))
+        if not os.path.isdir(load_dir):
+            raise OSError("Could not load agent from {}: No such directory.".format(load_dir))
+        agent.restore_model(rospy.get_param("/load"))
 
     if rospy.get_param("/save"):
         save_dir = os.path.dirname(rospy.get_param("/save"))
@@ -112,11 +111,11 @@ if __name__ == '__main__':
             print("Average of last 100 rewards: {:0.2f}".
                         format(sum(r.episode_rewards[-100:]) / min(100, len(r.episode_rewards))))
             print("{},{}".format(r.agent.episode,r.episode_rewards[-1]))
-            #with open("/root/catkin_ws/src/data.csv", "a") as myfile:
-            #    myfile.write("{},{}\n".format(r.agent.episode,r.episode_rewards[-1]) )
-        #if rospy.get_param("/save") and rospy.get_param("/save_episodes") is not None and not r.episode % rospy.get_param("/save_episodes"):
-         #   print("Saving agent to {}".format(rospy.get_param("/save")))
-            #r.agent.save_model(rospy.get_param("/save"))
+            with open("/root/catkin_ws/src/data.csv", "a") as myfile:
+                myfile.write("{},{}\n".format(r.agent.episode,r.episode_rewards[-1]) )
+        if rospy.get_param("/save") and rospy.get_param("/save_episodes") is not None and not r.episode % rospy.get_param("/save_episodes"):
+            print("Saving agent to {}".format(rospy.get_param("/save")))
+            # r.agent.save_model(rospy.get_param("/save"))
 
         return True
 
@@ -127,5 +126,5 @@ if __name__ == '__main__':
         episode_finished=episode_finished
     )
     runner.close()
-
+    
     print("Learning finished. Total episodes: {ep}".format(ep=runner.agent.episode))

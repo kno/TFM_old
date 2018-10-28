@@ -47,16 +47,8 @@ class QuadCopterEnv(gym.Env):
         # stablishes connection with simulator
         self.gazebo = GazeboConnection()
         high = np.array([
-#            5000,
-#            5000,
-#            5000,
-            5000,
-            5000,
-            5000,
-            5000,
-            5000,
             5000])
-        self.action_space = spaces.Discrete(6) #Forward,Left,Right,Up,Down,Back,None
+        self.action_space = spaces.Discrete(3) #Forward,Left,Right,Up,Down,Back,None
         self.observation_space = spaces.Box(-high, high)
         self.reward_range = (-np.inf, np.inf)
 
@@ -96,6 +88,7 @@ class QuadCopterEnv(gym.Env):
                  self.roundTo(rotation[1], 100),
                  self.roundTo(rotation[2], 100)
                  ]
+        observation = [self.roundTo(data_pose.position.z,100)-self.roundTo(self.desired_pose.position.z,100)]
         # 5th: pauses simulation
         self.gazebo.pauseSim()
 
@@ -123,15 +116,16 @@ class QuadCopterEnv(gym.Env):
         vel_cmd.angular.z = 0.0
 
         if action == 0: #FORWARD
-            vel_cmd.linear.x = self.speed_value
+            vel_cmd.linear.z = self.speed_value
         elif action == 1: #LEFT
 #            vel_cmd.linear.x = 0.05
 #            vel_cmd.angular.z = self.speed_value
-            vel_cmd.linear.x = -self.speed_value
+            vel_cmd.linear.z = -self.speed_value
         elif action == 2: #RIGHT
 #            vel_cmd.linear.x = 0.05
 #            vel_cmd.angular.z = -self.speed_value
-            vel_cmd.linear.y = -self.speed_value
+            # vel_cmd.linear.y = -self.speed_value
+            pass
         elif action == 3: #Up
             vel_cmd.linear.z = self.speed_value
         elif action == 4: #Down
@@ -157,14 +151,14 @@ class QuadCopterEnv(gym.Env):
         reward,done,rotation = self.process_data(data_pose, data_imu)
 
         # Promote going forwards instead if turning
-        if action == 0:
-            reward *= 2
-        elif action == 1 or action == 2:
-            reward *= 0.75
-        elif action == 3 or action == 4:
-            reward *= 1.5
-        elif action == 5 or action == 6:
-            reward *= 2
+        # if action == 0:
+        #     reward *= 2
+        # elif action == 1 or action == 2:
+        #     reward *= 0.75
+        # elif action == 3 or action == 4:
+        #     reward *= 1.5
+        # elif action == 5 or action == 6:
+        #     reward *= 2
 
         #state = [data_pose.position, self.desired_pose]
         state = [self.roundTo(data_pose.position.x,100)-self.roundTo(self.desired_pose.position.x,100), 
@@ -179,11 +173,12 @@ class QuadCopterEnv(gym.Env):
                  self.roundTo(rotation[1], 100),
                  self.roundTo(rotation[2], 100)
                  ]
+        state = [self.roundTo(data_pose.position.z,100)-self.roundTo(self.desired_pose.position.z,100)]
         #print "after step state"
-        print state
-        print reward
+        print (state)
+        print (reward)
         with open("/root/catkin_ws/src/position.csv", "a") as myfile:
-            myfile.write("{},{},{}\n".format(state[0], state[1], state[2] ))
+            myfile.write("{}\n".format(state[0] ))
         return state, reward, done, {}
 
     def roundTo(self,data,to):
@@ -259,10 +254,12 @@ class QuadCopterEnv(gym.Env):
         
 
     def improved_distance_reward(self, current_pose):
-        current_dist = self.calculate_dist_between_two_Points(current_pose.position, self.desired_pose.position)
+        # current_dist = self.calculate_dist_between_two_Points(current_pose.position, self.desired_pose.position)
+        current_dist = current_pose.position.z - self.desired_pose.position.z
         #rospy.loginfo("Calculated Distance = "+str(current_dist))
         
-        if current_dist < 0.5:
+        print ("dist->" + str(abs(current_dist)))
+        if abs(current_dist) < 0.5:
             reward = 2000
         elif current_dist < self.best_dist:
             reward = 100

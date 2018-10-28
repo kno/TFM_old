@@ -52,7 +52,7 @@ if __name__ == '__main__':
         visualize=True
     )
 
-    with open('/root/catkin_ws/src/drone_training/drone_training/configs/ppo.json', 'r') as fp:
+    with open('/root/catkin_ws/src/drone_training/drone_training/configs/ddpg.json', 'r') as fp:
         agent = json.load(fp=fp)
 
     with open('/root/catkin_ws/src/drone_training/drone_training/configs/mlp2_network.json', 'r') as fp:
@@ -66,11 +66,11 @@ if __name__ == '__main__':
             network=network,
         )
     )
-#    if rospy.get_param("/load"):
-#        load_dir = os.path.dirname(rospy.get_param("/load"))
-#        if not os.path.isdir(load_dir):
-#            raise OSError("Could not load agent from {}: No such directory.".format(load_dir))
-#        agent.restore_model(rospy.get_param("/load"))
+    if rospy.get_param("/load"):
+        load_dir = os.path.dirname(rospy.get_param("/load"))
+        if not os.path.isdir(load_dir):
+            raise OSError("Could not load agent from {}: No such directory.".format(load_dir))
+        agent.restore_model(rospy.get_param("/load"))
 
     if rospy.get_param("/save"):
         save_dir = os.path.dirname(rospy.get_param("/save"))
