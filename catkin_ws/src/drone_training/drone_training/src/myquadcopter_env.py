@@ -65,9 +65,16 @@ class QuadCopterEnv(gym.Env):
         
         # 1st: resets the simulation to initial values
         self.gazebo.resetSim()
+        vel_cmd = Twist()
+        vel_cmd.linear.x = 0.0
+        vel_cmd.linear.y = 0.0
+        vel_cmd.linear.z = 0.0
+        vel_cmd.angular.z = 0.0
+
 
         # 2nd: Unpauses simulation
         self.gazebo.unpauseSim()
+        self.vel_pub.publish(vel_cmd)
 
         # 3rd: resets the robot to initial conditions
         self.check_topic_publishers_connection()
@@ -88,7 +95,7 @@ class QuadCopterEnv(gym.Env):
                  self.roundTo(rotation[1], 100),
                  self.roundTo(rotation[2], 100)
                  ]
-        observation = [self.roundTo(data_pose.position.z,100)-self.roundTo(self.desired_pose.position.z,100)]
+        observation = [data_pose.position.z - self.desired_pose.position.z]
         # 5th: pauses simulation
         self.gazebo.pauseSim()
 
@@ -115,13 +122,13 @@ class QuadCopterEnv(gym.Env):
         vel_cmd.linear.z = 0.0
         vel_cmd.angular.z = 0.0
 
-        if action == 0: #FORWARD
+        if action == 0: # UP
             vel_cmd.linear.z = self.speed_value
-        elif action == 1: #LEFT
+        elif action == 1: # DOWN
 #            vel_cmd.linear.x = 0.05
 #            vel_cmd.angular.z = self.speed_value
             vel_cmd.linear.z = -self.speed_value
-        elif action == 2: #RIGHT
+        elif action == 2: # noop
 #            vel_cmd.linear.x = 0.05
 #            vel_cmd.angular.z = -self.speed_value
             # vel_cmd.linear.y = -self.speed_value
@@ -135,15 +142,14 @@ class QuadCopterEnv(gym.Env):
 
         # Then we send the command to the robot and let it go
         # for running_step seconds
-        self.gazebo.unpauseSim()
-        self.vel_pub.publish(vel_cmd)
         if (rospy.get_time() - self.simulationStartTime) > 0:
             rate = (time.time() - self.realStarttime) / (rospy.get_time() - self.simulationStartTime)
         else:
             rate = 0.1
-        
+
+        self.gazebo.unpauseSim()
+        self.vel_pub.publish(vel_cmd)
         time.sleep(self.running_step * rate)
-        
         data_pose, data_imu = self.take_observation()
         self.gazebo.pauseSim()
 
@@ -173,7 +179,7 @@ class QuadCopterEnv(gym.Env):
                  self.roundTo(rotation[1], 100),
                  self.roundTo(rotation[2], 100)
                  ]
-        state = [self.roundTo(data_pose.position.z,100)-self.roundTo(self.desired_pose.position.z,100)]
+        state = [data_pose.position.z-self.desired_pose.position.z]
         #print "after step state"
         print (state)
         print (reward)
@@ -240,7 +246,7 @@ class QuadCopterEnv(gym.Env):
         self.vel_pub.publish(vel_cmd)
 
 
-    def takeoff_sequence(self, seconds_taking_off=1):
+    def takeoff_sequence(self, seconds_taking_off=0.1):
         rospy.loginfo("Takeoff sequence starting")
         # Before taking off be sure that cmd_vel value there is is null to avoid drifts
         self.reset_cmd_vel_commands()
@@ -283,7 +289,7 @@ class QuadCopterEnv(gym.Env):
 
         pitch_bad = not(-self.max_incl < pitch < self.max_incl)
         roll_bad = not(-self.max_incl < roll < self.max_incl)
-        altitude_bad = data_position.position.z > self.max_altitude or data_position.position.z < 0.05
+        altitude_bad = data_position.position.z > self.max_altitude  or data_position.position.z < 0.05
 
         if altitude_bad or pitch_bad or roll_bad:
             rospy.loginfo ("(Drone flight status is wrong) >>> ("+str(altitude_bad)+","+str(pitch_bad)+","+str(roll_bad)+")")
