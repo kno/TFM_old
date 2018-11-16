@@ -266,13 +266,13 @@ class QuadCopterEnv(gym.Env):
         
         print ("dist->" + str(abs(current_dist)))
         if abs(current_dist) < 0.5:
-            reward = 2000
+            reward = 2000 - abs(current_dist)
         elif current_dist < self.best_dist:
-            reward = 100
+            reward = 25 - abs(current_dist)
         elif current_dist == self.best_dist:
-            reward = 0
+            reward = 0 - abs(current_dist)
         else:
-            reward = -100
+            reward = 50 - abs(current_dist)
             #print "Made Distance bigger= "+str(self.best_dist)
         self.best_dist = current_dist
         
