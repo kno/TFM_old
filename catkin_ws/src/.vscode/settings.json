@@ -1,0 +1,5 @@
+{
+    "python.pythonPath": "tensorforce/bin/python",
+    "ros.distro": "melodic",
+    "python.linting.enabled": false
+}
