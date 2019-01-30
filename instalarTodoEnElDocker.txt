@@ -1,4 +1,4 @@
-virtualenv tensorforce -p python2
-source tensorforce/bin/activate
-pip install tensorforce[tf] gym pyyaml rospkg
+    virtualenv tensorforce -p python2
+    source tensorforce/bin/activate
+    pip install tensorforce[tf] gym pyyaml rospkg
 roslaunch drone_training main.launch
