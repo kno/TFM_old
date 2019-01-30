@@ -4,12 +4,12 @@ gamma: 0.8
 epsilon: 0.9
 epsilon_discount: 0.999 # 1098 eps to reach 0.1
 nepisodes: 2000
-nsteps: 500
+nsteps: 1000
 debug: True
 save: '/root/catkin_ws/src/model/'
 load: '/root/catkin_ws/src/model/'
 save_episodes: 10
-testing: True
+testing: False
 
 # Environment Parameters
 desired_pose:

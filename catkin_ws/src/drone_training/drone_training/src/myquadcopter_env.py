@@ -36,6 +36,7 @@ class QuadCopterEnv(gym.Env):
         
         # gets training parameters from param server
         self.speed_value = rospy.get_param("/speed_value")
+        self.rotation_speed_value = rospy.get_param("/rotation_value")
         self.desired_pose = Pose()
         self.desired_pose.position.z = rospy.get_param("/desired_pose/z")
         self.desired_pose.position.x = rospy.get_param("/desired_pose/x")
@@ -130,9 +131,9 @@ class QuadCopterEnv(gym.Env):
         elif action == 2: # DOWN
             vel_cmd.linear.z = -self.speed_value
         elif action == 3: #rotate cw
-           vel_cmd.angular.z = self.speed_value
+           vel_cmd.angular.z = self.rotation_speed_value
         elif action == 4: #rotate ccw
-           vel_cmd.angular.z = -self.speed_value
+           vel_cmd.angular.z = -self.rotation_speed_value
 
         # Then we send the command to the robot and let it go
         # for running_step seconds
@@ -272,12 +273,12 @@ class QuadCopterEnv(gym.Env):
         elif current_dist == self.best_dist:
             reward = 0 - abs(current_dist)
         else:
-            reward = 50 - abs(current_dist)
+            reward = 0 - abs(current_dist)
             #print "Made Distance bigger= "+str(self.best_dist)
         self.best_dist = current_dist
 
         # add reward of rotation:
-        reward += current_rotation_distance 
+        reward = 150 - abs(current_dist) - 100 * abs(current_rotation_distance)
         
         return reward, current_dist, current_rotation_distance
         
@@ -303,7 +304,7 @@ class QuadCopterEnv(gym.Env):
         else:
             reward, distance, rotation_distance = self.improved_distance_reward(data_position, data_imu.orientation)
             with open("/root/catkin_ws/src/distance.csv", "a") as myfile:
-                myfile.write("{}\n".format(distance))
+                myfile.write("{}, {}\n".format(distance, rotation_distance))
 
             if (distance > self.max_distance):
                 done = True
