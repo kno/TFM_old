@@ -4,72 +4,22 @@
     },
     {
         "type": "dense",
-        "size": 32,
+        "size": 64,
         "activation": "relu"
     },
     {
         "type": "dense",
-        "size": 32,
+        "size": 64,
         "activation": "relu"
     },
     {
         "type": "dense",
-        "size": 32,
+        "size": 64,
         "activation": "relu"
     },
     {
         "type": "dense",
-        "size": 32,
-        "activation": "relu"
-    },
-    {
-        "type": "dense",
-        "size": 32,
-        "activation": "relu"
-    },
-    {
-        "type": "dense",
-        "size": 32,
-        "activation": "relu"
-    },
-    {
-        "type": "dense",
-        "size": 32,
-        "activation": "relu"
-    },
-    {
-        "type": "dense",
-        "size": 32,
-        "activation": "relu"
-    },
-    {
-        "type": "dense",
-        "size": 32,
-        "activation": "relu"
-    },
-    {
-        "type": "dense",
-        "size": 32,
-        "activation": "relu"
-    },
-    {
-        "type": "dense",
-        "size": 32,
-        "activation": "relu"
-    },
-    {
-        "type": "dense",
-        "size": 32,
-        "activation": "relu"
-    },
-    {
-        "type": "dense",
-        "size": 32,
-        "activation": "relu"
-    },
-    {
-        "type": "dense",
-        "size": 32,
+        "size": 64,
         "activation": "relu"
     }
 ]

@@ -84,7 +84,7 @@ class QuadCopterEnv(gym.Env):
         self.takeoff_sequence()
         rotation = [0,0,0]
         # 4th: takes an observation of the initial condition of the robot
-        data_pose, data_imu = self.take_observation()
+        data_pose, self.data_imu = self.take_observation()
         # observation = [self.roundTo(data_pose.position.x,100)-self.roundTo(self.desired_pose.position.x,100), 
                 #  self.roundTo(data_pose.position.y,100)-self.roundTo(self.desired_pose.position.y,100), 
                 #  self.roundTo(data_pose.position.z,100)-self.roundTo(self.desired_pose.position.z,100), 
@@ -97,7 +97,7 @@ class QuadCopterEnv(gym.Env):
                 #  self.roundTo(rotation[1], 100),
                 #  self.roundTo(rotation[2], 100)
                 #  ]
-        observation = [data_pose.position.z - self.desired_pose.position.z, data_imu.orientation.w]
+        observation = [data_pose.position.z - self.desired_pose.position.z, self.data_imu.orientation.z]
         # 5th: pauses simulation
         self.gazebo.pauseSim()
 
@@ -130,10 +130,12 @@ class QuadCopterEnv(gym.Env):
             vel_cmd.linear.z = self.speed_value
         elif action == 2: # DOWN
             vel_cmd.linear.z = -self.speed_value
-        elif action == 3: #rotate cw
-           vel_cmd.angular.z = self.rotation_speed_value
-        elif action == 4: #rotate ccw
-           vel_cmd.angular.z = -self.rotation_speed_value
+        elif action == 3: #rotate ccw
+            if self.data_imu >= 0.9:
+                vel_cmd.angular.z = self.rotation_speed_value
+        elif action == 4: #rotate cw
+            if self.data_imu <= 0.9:
+                vel_cmd.angular.z = -self.rotation_speed_value
 
         # Then we send the command to the robot and let it go
         # for running_step seconds
@@ -145,12 +147,12 @@ class QuadCopterEnv(gym.Env):
         
         self.vel_pub.publish(vel_cmd)
         time.sleep(self.running_step * rate)
-        data_pose, data_imu = self.take_observation()
+        data_pose, self.data_imu = self.take_observation()
 
         self.gazebo.pauseSim()
 
         # finally we get an evaluation based on what happened in the sim
-        reward,done, rotation_distance = self.process_data(data_pose, data_imu)
+        reward,done, rotation_distance = self.process_data(data_pose, self.data_imu)
 
         # Promote going forwards instead if turning
         # if action == 0:
@@ -217,7 +219,7 @@ class QuadCopterEnv(gym.Env):
 
 
     def init_desired_pose(self):
-        current_init_pose, imu = self.take_observation()
+        current_init_pose, self.data_imu = self.take_observation()
         self.best_dist = self.calculate_dist_between_two_Points(current_init_pose.position, self.desired_pose.position)
 
     def check_topic_publishers_connection(self):
@@ -265,19 +267,10 @@ class QuadCopterEnv(gym.Env):
         rospy.loginfo( "rotation distance: " + str(current_rotation_distance))
         #rospy.loginfo("Calculated Distance = "+str(current_dist))
         
-        print ("dist->" + str(abs(current_dist)))
-        if abs(current_dist) < 0.5 and abs(current_rotation_distance) < 0.1:
-            reward = 2000 - abs(current_dist)
-        elif current_dist < self.best_dist:
-            reward = 25 - abs(current_dist)
-        elif current_dist == self.best_dist:
-            reward = 0 - abs(current_dist)
-        else:
-            reward = 0 - abs(current_dist)
-            #print "Made Distance bigger= "+str(self.best_dist)
-        self.best_dist = current_dist
+        self.speed_value = abs(current_dist) / 5
+        self.rotation_speed_value = abs(current_rotation_distance) / 5
 
-        # add reward of rotation:
+        # Reward:
         reward = 150 - abs(current_dist) - 100 * abs(current_rotation_distance)
         
         return reward, current_dist, current_rotation_distance
@@ -286,11 +279,11 @@ class QuadCopterEnv(gym.Env):
 
         done = False
         
-        euler = tf.transformations.euler_from_quaternion([data_imu.orientation.x,data_imu.orientation.y,data_imu.orientation.z,data_imu.orientation.w])
+        euler = tf.transformations.euler_from_quaternion([data_imu.orientation.x,data_imu.orientation.y,data_imu.orientation.z,data_imu.orientation.z])
         roll = euler[0]
         pitch = euler[1]
         yaw = euler[2]
-        print "Yaw->" + str(yaw)
+        #print "Yaw->" + str(yaw)
 
         pitch_bad = not(-self.max_incl < pitch < self.max_incl)
         roll_bad = not(-self.max_incl < roll < self.max_incl)

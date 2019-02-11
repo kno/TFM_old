@@ -66,11 +66,12 @@ if __name__ == '__main__':
             network=network,
         )
     )
-    if rospy.get_param("/testing"):
+    if rospy.get_param("/load"):
         load_dir = os.path.dirname(rospy.get_param("/load"))
         if not os.path.isdir(load_dir):
-            raise OSError("Could not load agent from {}: No such directory.".format(load_dir))
-        agent.restore_model(rospy.get_param("/load"))
+            print("Could not load agent from {}: No such directory.".format(load_dir))
+        else:
+            agent.restore_model(rospy.get_param("/load"))
 
     if rospy.get_param("/save"):
         save_dir = os.path.dirname(rospy.get_param("/save"))
