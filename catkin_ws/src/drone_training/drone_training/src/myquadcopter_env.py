@@ -31,7 +31,7 @@ class QuadCopterEnv(gym.Env):
         # We assume that a ROS node has already been created
         # before initialising the environment
         
-        self.vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=5)
+        self.vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=50)
         self.takeoff_pub = rospy.Publisher('/ardrone/takeoff', EmptyTopicMsg, queue_size=0)
         
         # gets training parameters from param server
@@ -131,7 +131,7 @@ class QuadCopterEnv(gym.Env):
         elif action == 2: # DOWN
             vel_cmd.linear.z = -self.speed_value
         elif action == 3: #rotate ccw
-            if self.data_imu >= 0.9:
+            if self.data_imu >= -0.9:
                 vel_cmd.angular.z = self.rotation_speed_value
         elif action == 4: #rotate cw
             if self.data_imu <= 0.9:
@@ -148,7 +148,8 @@ class QuadCopterEnv(gym.Env):
         self.vel_pub.publish(vel_cmd)
         time.sleep(self.running_step * rate)
         data_pose, self.data_imu = self.take_observation()
-
+        self.reset_cmd_vel_commands()
+        
         self.gazebo.pauseSim()
 
         # finally we get an evaluation based on what happened in the sim
@@ -224,7 +225,7 @@ class QuadCopterEnv(gym.Env):
 
     def check_topic_publishers_connection(self):
         
-        rate = rospy.Rate(10) # 10hz
+        rate = rospy.Rate(1) # 10hz
         while(self.takeoff_pub.get_num_connections() == 0):
             rospy.loginfo("No susbribers to Takeoff yet so we wait and try again")
             rate.sleep();
