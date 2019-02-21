@@ -49,8 +49,8 @@ class QuadCopterEnv(gym.Env):
         # stablishes connection with simulator
         self.gazebo = GazeboConnection()
         high = np.array([
-            5000, 5000])
-        self.action_space = spaces.Discrete(5) #noop, up down, rot cw, rot ccw
+         1])
+        self.action_space = spaces.Discrete(3) #noop, up down, rot cw, rot ccw
         self.observation_space = spaces.Box(-high, high)
         self.reward_range = (-np.inf, np.inf)
 
@@ -97,7 +97,8 @@ class QuadCopterEnv(gym.Env):
                 #  self.roundTo(rotation[1], 100),
                 #  self.roundTo(rotation[2], 100)
                 #  ]
-        observation = [data_pose.position.z - self.desired_pose.position.z, self.data_imu.orientation.z]
+        #observation = [data_pose.position.z - self.desired_pose.position.z, data_pose.position.z, self.data_imu.orientation.z]
+        observation = [self.data_imu.orientation.z]
         # 5th: pauses simulation
         self.gazebo.pauseSim()
 
@@ -126,16 +127,10 @@ class QuadCopterEnv(gym.Env):
 
         if action == 0: # noop
             pass
-        elif action == 1: # UP
-            vel_cmd.linear.z = self.speed_value
-        elif action == 2: # DOWN
-            vel_cmd.linear.z = -self.speed_value
-        elif action == 3: #rotate ccw
-            if self.data_imu >= -0.9:
-                vel_cmd.angular.z = self.rotation_speed_value
-        elif action == 4: #rotate cw
-            if self.data_imu <= 0.9:
-                vel_cmd.angular.z = -self.rotation_speed_value
+        elif action == 1: # ccw
+            vel_cmd.angular.z = self.rotation_speed_value
+        elif action == 2: # cw
+            vel_cmd.angular.z = -self.rotation_speed_value
 
         # Then we send the command to the robot and let it go
         # for running_step seconds
@@ -155,35 +150,12 @@ class QuadCopterEnv(gym.Env):
         # finally we get an evaluation based on what happened in the sim
         reward,done, rotation_distance = self.process_data(data_pose, self.data_imu)
 
-        # Promote going forwards instead if turning
-        # if action == 0:
-        #     reward *= 2
-        # elif action == 1 or action == 2:
-        #     reward *= 0.75
-        # elif action == 3 or action == 4:
-        #     reward *= 1.5
-        # elif action == 5 or action == 6:
-        #     reward *= 2
-
-        #state = [data_pose.position, self.desired_pose]
-        # state = [self.roundTo(data_pose.position.x,100)-self.roundTo(self.desired_pose.position.x,100), 
-                #  self.roundTo(data_pose.position.y,100)-self.roundTo(self.desired_pose.position.y,100), 
-                #  self.roundTo(data_pose.position.z,100)-self.roundTo(self.desired_pose.position.z,100),
-
-                 #self.roundTo(self.desired_pose.position.x,100), 
-                 #self.roundTo(self.desired_pose.position.y,100), 
-                 #self.roundTo(self.desired_pose.position.z,100),
-
-                #  self.roundTo(rotation[0], 100),
-                #  self.roundTo(rotation[1], 100),
-                #  self.roundTo(rotation[2], 100)
-                #  ]
-        state = [data_pose.position.z - self.desired_pose.position.z, rotation_distance]
+        state = [rotation_distance]
         #print "after step state"
         print (state)
         print (reward)
         with open("/root/catkin_ws/src/position.csv", "a") as myfile:
-            myfile.write("z:{}, rot:{}\n".format(state[0], state[1] ))
+            myfile.write("rot:{}\n".format(state[0] ))
         return state, reward, done, {}
 
     def roundTo(self,data,to):
@@ -272,7 +244,7 @@ class QuadCopterEnv(gym.Env):
         self.rotation_speed_value = abs(current_rotation_distance) / 5
 
         # Reward:
-        reward = 150 - abs(current_dist) - 100 * abs(current_rotation_distance)
+        reward = (100 - 100 * abs(current_rotation_distance)) ** 2
         
         return reward, current_dist, current_rotation_distance
         
@@ -290,10 +262,11 @@ class QuadCopterEnv(gym.Env):
         roll_bad = not(-self.max_incl < roll < self.max_incl)
         altitude_bad = data_position.position.z > self.max_altitude  or data_position.position.z < 0.05
 
-        if altitude_bad or pitch_bad or roll_bad:
+        if altitude_bad or pitch_bad:
             rospy.loginfo ("(Drone flight status is wrong) >>> ("+str(altitude_bad)+","+str(pitch_bad)+","+str(roll_bad)+")")
+            rospy.loginfo ("(Drone flight status is wrong) >>> ("+str(data_position.position.z)+","+str(pitch)+","+str(roll)+")")
             done = True
-            reward = -2000
+            reward = -2000000
             rotation_distance = 0
         else:
             reward, distance, rotation_distance = self.improved_distance_reward(data_position, data_imu.orientation)

@@ -18,7 +18,7 @@ desired_pose:
     z: 5
 max_altitude: 55.0   # in meters
 max_distance: 50.0  # in meters
-max_incl: 0.7       # in rads
+max_incl: 0.9       # in rads
 speed_value: 0.3    # in m/s
 rotation_value: 0.03
 running_step: 0.5   # in seconds
