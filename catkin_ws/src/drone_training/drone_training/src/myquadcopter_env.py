@@ -51,7 +51,7 @@ class QuadCopterEnv(gym.Env):
         high = np.array([
          1])
         self.action_space = spaces.Discrete(3) #noop, up down, rot cw, rot ccw
-        self.observation_space = spaces.Box(-high, high)
+        self.observation_space = spaces.Box(np.array([-1]), np.array([1]))
         self.reward_range = (-np.inf, np.inf)
 
         self.seed()
@@ -128,9 +128,15 @@ class QuadCopterEnv(gym.Env):
         if action == 0: # noop
             pass
         elif action == 1: # ccw
-            vel_cmd.angular.z = self.rotation_speed_value
+            if self.data_imu.orientation.z < 0.9:
+                vel_cmd.angular.z = self.rotation_speed_value
+            else:
+                rospy.loginfo("Could not rotate ccw because orientation: {}".format([self.data_imu.orientation.z]))
         elif action == 2: # cw
-            vel_cmd.angular.z = -self.rotation_speed_value
+            if self.data_imu.orientation.z > -0.9:
+                vel_cmd.angular.z = -self.rotation_speed_value
+            else:
+                rospy.loginfo("Could not rotate cw because orientation: {}".format([self.data_imu.orientation.z]))
 
         # Then we send the command to the robot and let it go
         # for running_step seconds
@@ -147,6 +153,9 @@ class QuadCopterEnv(gym.Env):
         
         self.gazebo.pauseSim()
 
+        if data_pose.position.z < 1:
+            self.up()
+
         # finally we get an evaluation based on what happened in the sim
         reward,done, rotation_distance = self.process_data(data_pose, self.data_imu)
 
@@ -157,6 +166,26 @@ class QuadCopterEnv(gym.Env):
         with open("/root/catkin_ws/src/position.csv", "a") as myfile:
             myfile.write("rot:{}\n".format(state[0] ))
         return state, reward, done, {}
+
+    def up(self):
+        if (rospy.get_time() - self.simulationStartTime) > 0:
+            rate = (time.time() - self.realStarttime) / (rospy.get_time() - self.simulationStartTime)
+        else:
+            rate = 0.1
+
+        vel_cmd = Twist()
+        vel_cmd.linear.x = 0.0
+        vel_cmd.linear.y = 0.0
+        vel_cmd.linear.z = 0.5
+        vel_cmd.angular.z = 0.0
+
+        self.gazebo.unpauseSim()
+        
+        self.vel_pub.publish(vel_cmd)
+        time.sleep(self.running_step * rate)
+        self.reset_cmd_vel_commands()
+        
+        self.gazebo.pauseSim()
 
     def roundTo(self,data,to):
         return int(data * to)
@@ -241,7 +270,7 @@ class QuadCopterEnv(gym.Env):
         #rospy.loginfo("Calculated Distance = "+str(current_dist))
         
         self.speed_value = abs(current_dist) / 5
-        self.rotation_speed_value = abs(current_rotation_distance) / 5
+        self.rotation_speed_value = abs(current_rotation_distance)
 
         # Reward:
         reward = (100 - 100 * abs(current_rotation_distance)) ** 2
